@@ -108,13 +108,28 @@ function updateGameArea() {
     if (myGameArea.frameNo > 1000) {
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
             for (var j = 0; j < Number(Math.random() * (5 - 1) + 1); j += 1) {
-                y = (myGameArea.canvas.height - (Math.random() * myGameArea.canvas.height));
-                x = myGameArea.canvas.width + (Math.random() * myGameArea.canvas.width);
+                y = (myGameArea.canvas.height - (parseInt(Math.random() * (myGameArea.canvas.height - 50) + 50)));
+                // if (j == 0) {
+                //     y = parseInt(Math.random() * myGameArea.canvas.height);
+                // } else {
+                //     var repetidoY = true;
+                //     while (repetidoY) {
+                //         y = parseInt(Math.random() * myGameArea.canvas.height);
+                //         repetidoY = false;
+                //         for (var k = 0; k < myObstacles.length; k += 1) {
+                //             if (y < myObstacles[k].y + 50 && y > myObstacles[k].y - 50) {
+                //                 repetidoY = true;
+                //                 console.log("repetidoY");
+                //             }
+                //         }
+                //     }
+                // }
+                x = myGameArea.canvas.width + (parseInt(Math.random() * myGameArea.canvas.width));
                 myObstacles.push(new component(100, 100, "black", x, y));
             }
         }
         for (i = 0; i < myObstacles.length; i += 1) {
-            if (myObstacles[i].x + 50 < 0) {
+            if (myObstacles[i].x + 100 < 0) {
                 myObstacles.splice(i, 1);
             }
         }
