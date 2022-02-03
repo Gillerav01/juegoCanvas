@@ -12,9 +12,9 @@ window.addEventListener("resize", function () {
 
 document.oncontextmenu = function () { return false }
 
-
 function start() {
-    principal = new component(50, 50, "red", myGameArea.canvas.width / 2, myGameArea.canvas.height / 2);
+
+    principal = new component(50, 50, "red", 100, window.innerHeight / 2);
     myScore = new component("30px", "Consolas", "white", 280, 40, "text");
     myGameArea.start();
     myGameArea.context.fillStyle = "black";
@@ -96,6 +96,23 @@ function updateGameArea() {
     for (i = 0; i < myObstacles.length; i += 1) {
         if (principal.crashWith(myObstacles[i])) {
             myGameArea.stop();
+            localStorage.setItem("puntuacion", puntuacion);
+            if (puntuacion > localStorage.getItem("record")) {
+                localStorage.setItem("record", puntuacion);
+            }
+            myGameArea.context.fillStyle = "black";
+            myGameArea.context.fillRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+            myGameArea.context.fillStyle = "white";
+            myGameArea.context.font = "30px Consolas";
+            myGameArea.context.fillText("Has perdido", myGameArea.canvas.width / 2 - 100, myGameArea.canvas.height / 2);
+            myGameArea.context.fillText("Puntuación: " + puntuacion, myGameArea.canvas.width / 2 - 100, myGameArea.canvas.height / 2 + 50);
+            myGameArea.context.fillText("Record: " + localStorage.getItem("record"), myGameArea.canvas.width / 2 - 100, myGameArea.canvas.height / 2 + 100);
+            myGameArea.context.fillText("Pulsa R para reiniciar", myGameArea.canvas.width / 2 - 100, myGameArea.canvas.height / 2 + 150);
+            document.onkeydown = function (e) {
+                if (e.keyCode == 82) {
+                    location.reload();
+                }
+            }
             return;
         }
     }
