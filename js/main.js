@@ -1,13 +1,14 @@
-"use strict";
 var principal;
 var myObstacles = [];
 var myScore;
 var puntuacion = 0;
+var touches;
 
 window.addEventListener("load", start);
 window.addEventListener("resize", function () {
     myGameArea.canvas.width = window.innerWidth;
     myGameArea.canvas.height = window.innerHeight;
+    myScore.x = window.innerWidth / 2;
 });
 
 document.oncontextmenu = function () { return false }
@@ -15,10 +16,8 @@ document.oncontextmenu = function () { return false }
 function start() {
 
     principal = new component(50, 50, "red", 100, window.innerHeight / 2);
-    myScore = new component("30px", "Consolas", "white", 280, 40, "text");
+    myScore = new component("30px", "Consolas", "white", window.innerWidth / 2 - 120, 50, "text");
     myGameArea.start();
-    myGameArea.context.fillStyle = "black";
-    myGameArea.context.fillRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
 }
 
 var myGameArea = {
@@ -30,14 +29,20 @@ var myGameArea = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.interval = setInterval(updateGameArea, 0);
         this.frameNo = 0;
-        window.addEventListener('keydown', function (e) {
-            myGameArea.keys = (myGameArea.keys || []);
-            myGameArea.keys[e.keyCode] = true;
-        })
-        window.addEventListener('keyup', function (e) {
-            myGameArea.keys[e.keyCode] = false;
-        })
-
+        if (navigator.userAgent.match(/Android/i) != null) {
+            this.canvas.addEventListener('touchmove', function (e) {
+                principal.x = e.touches[0].pageX - principal.halfX;
+                principal.y = e.touches[0].pageY - principal.halfY;
+            }, false);
+        } else {
+            window.addEventListener('keydown', function (e) {
+                myGameArea.keys = (myGameArea.keys || []);
+                myGameArea.keys[e.keyCode] = true;
+            })
+            window.addEventListener('keyup', function (e) {
+                myGameArea.keys[e.keyCode] = false;
+            })
+        }
     },
     clear: function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -52,17 +57,20 @@ function everyinterval(n) {
     return false;
 }
 
-function component(width, height, color, x, y, ty) {
+function component(width, height, color, x, y, type) {
     this.width = width;
     this.height = height;
     this.speedX = 0;
     this.speedY = 0;
+    this.type = type;
+    this.halfX = width / 2;
+    this.halfY = height / 2;
     this.x = x;
     this.y = y;
     this.update = function () {
         var ctx = myGameArea.context;
         if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
+            ctx.font = "bold 48px serif";
             ctx.fillStyle = color;
             ctx.fillText(this.text, this.x, this.y);
         } else {
@@ -112,42 +120,32 @@ function updateGameArea() {
                 if (e.keyCode == 82) {
                     location.reload();
                 }
+            setTimeout(function () {
+                    location.reload();
+            }, 3000);
             }
             return;
         }
     }
-    if ((myGameArea.frameNo % 2000 == 0)) {
-        puntuacion += 20;
-    }
     myGameArea.clear();
     myGameArea.frameNo += 1;
-    var velocidad = 0.05;
-    if (myGameArea.frameNo > 1000) {
-        if (myGameArea.frameNo == 1 || everyinterval(150)) {
-            for (var j = 0; j < Number(Math.random() * (5 - 1) + 1); j += 1) {
-                y = (myGameArea.canvas.height - (parseInt(Math.random() * (myGameArea.canvas.height - 50) + 50)));
-                // if (j == 0) {
-                //     y = parseInt(Math.random() * myGameArea.canvas.height);
-                // } else {
-                //     var repetidoY = true;
-                //     while (repetidoY) {
-                //         y = parseInt(Math.random() * myGameArea.canvas.height);
-                //         repetidoY = false;
-                //         for (var k = 0; k < myObstacles.length; k += 1) {
-                //             if (y < myObstacles[k].y + 50 && y > myObstacles[k].y - 50) {
-                //                 repetidoY = true;
-                //                 console.log("repetidoY");
-                //             }
-                //         }
-                //     }
-                // }
-                x = myGameArea.canvas.width + (parseInt(Math.random() * myGameArea.canvas.width));
-                myObstacles.push(new component(100, 100, "black", x, y));
-            }
+    var velocidad = 0.10;
+    if (myGameArea.frameNo > 2000) {
+        if ((myGameArea.frameNo % 1000 == 0)) {
+            puntuacion += 10;
         }
-        for (i = 0; i < myObstacles.length; i += 1) {
-            if (myObstacles[i].x + 100 < 0) {
-                myObstacles.splice(i, 1);
+        var stringPuntuacion = "" + puntuacion;
+        var subStringPuntuacion = parseInt(stringPuntuacion.substring(0, 1));
+        if (puntuacion >= 50) {
+            subStringPuntuacion = 5;
+        }
+
+
+        if (myGameArea.frameNo == 1 || everyinterval(300)) {
+            for (var j = 0; j < Math.random() * (subStringPuntuacion - 1) + 1; j += 1) {
+                y = (myGameArea.canvas.height - (parseInt(Math.random() * (myGameArea.canvas.height - 50) + 50)));
+                x = myGameArea.canvas.width + (parseInt(Math.random() * myGameArea.canvas.width));
+                myObstacles.push(new component(100, 100, "yellow", x, y));
             }
         }
         for (var i = 0; i < myObstacles.length; i += 1) {
@@ -157,10 +155,34 @@ function updateGameArea() {
     }
     principal.speedX = 0;
     principal.speedY = 0;
-    if (myGameArea.keys && myGameArea.keys[37] && principal.x > 0) { principal.speedX = -3; }
-    if (myGameArea.keys && myGameArea.keys[39] && principal.x < myGameArea.canvas.width - principal.width - 2.99) { principal.speedX = 3; }
-    if (myGameArea.keys && myGameArea.keys[38] && principal.y > myGameArea.canvas.height - myGameArea.canvas.height - 2.99) { principal.speedY = -3; }
-    if (myGameArea.keys && myGameArea.keys[40] && principal.y < myGameArea.canvas.height - 30) { principal.speedY = 3; }
+    if (myGameArea.keys && myGameArea.keys[37] && principal.x > 0) {
+        if (puntuacion < 150) {
+            principal.speedX = -4;
+        } else {
+            principal.speedX = -5;
+        }
+    }
+    if (myGameArea.keys && myGameArea.keys[39] && principal.x < myGameArea.canvas.width - principal.width - 2.99) {
+        if (puntuacion < 150) {
+            principal.speedX = 4;
+        } else {
+            principal.speedX = 5;
+        }
+    }
+    if (myGameArea.keys && myGameArea.keys[38] && principal.y > myGameArea.canvas.height - myGameArea.canvas.height - 2.99) {
+        if (puntuacion < 150) {
+            principal.speedY = -4;
+        } else {
+            principal.speedY = -5;
+        }
+    }
+    if (myGameArea.keys && myGameArea.keys[40] && principal.y < myGameArea.canvas.height - 30) {
+        if (puntuacion < 150) {
+            principal.speedY = 4;
+        } else {
+            principal.speedY = 5;
+        }
+    }
     principal.newPos();
     myScore.text = "Puntuacion: " + puntuacion;
     myScore.update();
